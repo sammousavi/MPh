@@ -36,10 +36,17 @@ from logging import getLogger          # event logging
 ########################################
 log = getLogger(__package__)           # event log
 system = platform.system()             # operating system
+if system == "Darwin":  # Check if it's macOS
+    if "arm" in platform.machine().lower():
+        system = "Darwin_arm64"
+    else:
+        system = "Darwin_x86_64"
+
 architectures = {                      # valid system architecture names
     'Windows': ['win64'],
     'Linux':   ['glnxa64'],
-    'Darwin':  ['maci64'],
+    'Darwin_arm64':  ['macarm64'],
+    'Darwin_x86_64':  ['maci64'],
 }
 
 
@@ -170,7 +177,7 @@ def search_disk():
             Path('/usr/local'),
             Path.home() / '.local',
         ]
-    elif system == 'Darwin':
+    elif system == 'Darwin_x86_64' or system == 'Darwin_arm64':
         locations = [
             Path('/Applications'),
             Path.home() / 'Applications',
@@ -252,7 +259,7 @@ def find_backends():
     # Search system for Comsol executables.
     if system == 'Windows':
         executables = search_registry()
-    elif system in ('Linux', 'Darwin'):
+    elif system in ('Linux', 'Darwin_x86_64', 'Darwin_arm64'):
         executables = search_disk()
     else:
         error = f'Unsupported operating system "{system}".'
